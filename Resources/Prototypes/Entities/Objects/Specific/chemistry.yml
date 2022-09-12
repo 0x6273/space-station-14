@@ -85,6 +85,8 @@
   description: Used to contain a moderate amount of chemicals and solutions.
   id: Beaker
   components:
+  - type: Item
+    size: 6
   - type: Spillable
     solution: beaker
 
@@ -104,6 +106,7 @@
         map: ["enum.SolutionContainerLayers.Fill"]
         visible: false
   - type: Item
+    size: 12
     sprite: Objects/Specific/Chemistry/beaker_large.rsi
   - type: SolutionContainerManager
     solutions:

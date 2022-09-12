@@ -4,6 +4,11 @@
   id: BoxBeaker
   description: A box full of beakers.
   components:
+  - type: Storage
+    capacity: 54
+    whitelist:
+      tags:
+      - GlassBeaker
   - type: StorageFill
     contents:
       - id: Beaker

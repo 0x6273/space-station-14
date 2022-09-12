@@ -63,6 +63,8 @@
   name: flour bag
   description: A big bag of flour. Good for baking!
   components:
+  - type: Item
+    size: 6
   - type: Sprite
     state: flour-big
   - type: SolutionContainerManager
@@ -105,6 +107,8 @@
   name: flour pack
   description: A pack of flour. Good for baking!
   components:
+  - type: Item
+    size: 3
   - type: Sprite
     state: flour-small
   - type: SolutionContainerManager
@@ -147,6 +151,8 @@
   name: rice bag
   description: A big bag of rice. Good for cooking!
   components:
+  - type: Item
+    size: 6
   - type: Sprite
     state: rice-big
   - type: SolutionContainerManager
@@ -162,6 +168,8 @@
   name: rice pack
   description: A pack of rice. Good for cooking!
   components:
+  - type: Item
+    size: 3
   - type: Sprite
     state: rice-small
   - type: SolutionContainerManager
@@ -178,6 +186,8 @@
   name: sugar bag
   description: A big bag of tasty spacey sugar.
   components:
+  - type: Item
+    size: 6
   - type: Sprite
     state: sugar-big
   - type: SolutionContainerManager
@@ -193,6 +203,8 @@
   name: sugar pack
   description: A pack of tasty spacey sugar.
   components:
+  - type: Item
+    size: 3
   - type: Sprite
     state: sugar-small
   - type: SolutionContainerManager
@@ -211,6 +223,8 @@
   name: milk
   description: It's milk. White and nutritious goodness!
   components:
+  - type: Item
+    size: 6
   - type: Sprite
     state: milk
   - type: SolutionContainerManager
@@ -227,6 +241,8 @@
   name: soy milk
   description: It's soy milk. White and nutritious goodness!
   components:
+  - type: Item
+    size: 6
   - type: Sprite
     state: milk-soy
   - type: SolutionContainerManager
@@ -243,6 +259,8 @@
   name: oat milk
   description: It's oat milk. Tan and nutritious goodness!
   components:
+  - type: Item
+    size: 3
   - type: Sprite
     state: milk-oat
   - type: SolutionContainerManager

@@ -152,11 +152,12 @@
     netsync: false
   # TODO make these entitystorage again + placeablesurface after entity storage ECS gets merged.
   - type: Storage
-    capacity: 8
+    capacity: 16
     whitelist:
       tags:
       - Pizza
   - type: Item
+    size: 20
     sprite: Objects/Consumable/Food/Baked/pizza.rsi
     heldPrefix: box
   - type: Appearance
