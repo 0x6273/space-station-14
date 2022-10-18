@@ -435,7 +435,7 @@ namespace Content.Server.NodeContainer.EntitySystems
                 NodeGroupID.HVPower => Color.Orange,
                 NodeGroupID.MVPower => Color.Yellow,
                 NodeGroupID.Apc => Color.LimeGreen,
-                NodeGroupID.AMEngine => Color.Purple,
+                NodeGroupID.Ame => Color.Purple,
                 NodeGroupID.Pipe => Color.Blue,
                 NodeGroupID.WireNet => Color.DarkMagenta,
                 _ => Color.White

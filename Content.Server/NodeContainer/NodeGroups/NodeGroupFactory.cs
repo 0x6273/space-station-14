@@ -57,7 +57,7 @@ namespace Content.Server.NodeContainer.NodeGroups
         HVPower,
         MVPower,
         Apc,
-        AMEngine,
+        Ame,
         Pipe,
         WireNet
     }

@@ -11,6 +11,8 @@
     sprite: Objects/Power/AME/ame_jar.rsi
     state: jar
     netsync: false
-  - type: AMEFuelContainer
+  - type: AmeFuelContainer
+    fuelAmount: 1000
+    maxFuelAmount: 1000
   - type: StaticPrice
     price: 500

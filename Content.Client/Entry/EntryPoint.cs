@@ -1,7 +1,6 @@
 using Content.Client.Administration.Managers;
 using Content.Client.Changelog;
 using Content.Client.Chat.Managers;
-using Content.Client.Options;
 using Content.Client.Eui;
 using Content.Client.Flash;
 using Content.Client.GhostKick;
@@ -20,9 +19,6 @@ using Content.Client.Stylesheets;
 using Content.Client.Viewport;
 using Content.Client.Voting;
 using Content.Shared.Administration;
-using Content.Shared.AME;
-using Content.Shared.Chemistry.Components;
-using Content.Shared.Chemistry.Dispenser;
 using Content.Shared.Gravity;
 using Content.Shared.Lathe;
 using Content.Shared.Localizations;
@@ -100,7 +96,6 @@ namespace Content.Client.Entry
             // Do not add to these, they are legacy.
             _componentFactory.RegisterClass<SharedSpawnPointComponent>();
             _componentFactory.RegisterClass<SharedGravityGeneratorComponent>();
-            _componentFactory.RegisterClass<SharedAMEControllerComponent>();
             // Do not add to the above, they are legacy
 
             _prototypeManager.RegisterIgnore("accent");

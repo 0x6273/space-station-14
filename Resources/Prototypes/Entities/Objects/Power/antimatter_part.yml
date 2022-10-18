@@ -10,6 +10,9 @@
   - type: Sprite
     sprite: Objects/Power/AME/ame_part.rsi
     state: box
-  - type: AMEPart
+  - type: AmePart
+    unwrapSound: /Audio/Effects/unwrap.ogg
+    qualityNeeded: Pulsing
+    spawnPrototype: AMEShielding
   - type: StaticPrice
     price: 500

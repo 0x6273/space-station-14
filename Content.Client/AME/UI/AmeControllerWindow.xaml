@@ -8,7 +8,8 @@
             <Label Name="InjectionStatus" Text="{Loc 'ame-window-engine-injection-status-not-injecting-label'}" />
         </BoxContainer>
         <BoxContainer Orientation="Horizontal">
-            <Button Name="ToggleInjection"
+            <Button Name="ToggleInjectionButton"
+                    Access="Public"
                     Text="{Loc 'ame-window-toggle-injection-button'}"
                     StyleClasses="OpenBoth"
                     Disabled="True" />
@@ -20,6 +21,7 @@
         </BoxContainer>
         <BoxContainer Orientation="Horizontal">
             <Button Name="EjectButton"
+                    Access="Public"
                     Text="{Loc 'ame-window-eject-button'}"
                     StyleClasses="OpenBoth"
                     Disabled="True" />
@@ -31,9 +33,11 @@
         </BoxContainer>
         <BoxContainer Orientation="Horizontal">
             <Button Name="IncreaseFuelButton"
+                    Access="Public"
                     Text="{Loc 'ame-window-increase-fuel-button'}"
                     StyleClasses="OpenRight" />
             <Button Name="DecreaseFuelButton"
+                    Access="Public"
                     Text="{Loc 'ame-window-decrease-fuel-button'}"
                     StyleClasses="OpenLeft" />
         </BoxContainer>
