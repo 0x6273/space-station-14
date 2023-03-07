@@ -1,5 +1,6 @@
 ﻿using Content.Server.Chemistry.Components;
 using Content.Server.Popups;
+using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.FixedPoint;
 using JetBrains.Annotations;
 

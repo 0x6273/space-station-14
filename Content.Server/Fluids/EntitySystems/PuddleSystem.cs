@@ -1,5 +1,6 @@
 using Content.Server.Chemistry.EntitySystems;
 using Content.Server.Fluids.Components;
+using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Examine;
 using Content.Shared.FixedPoint;
 using Content.Shared.Fluids;

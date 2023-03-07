@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Content.Server.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry.Components;
+using Content.Shared.Chemistry.Components.SolutionManager;
 using Content.Shared.FixedPoint;
 
 namespace Content.Server.Chemistry.EntitySystems;
@@ -162,3 +163,4 @@ public sealed partial class SolutionContainerSystem
         return sb.ToString();
     }
 }
+

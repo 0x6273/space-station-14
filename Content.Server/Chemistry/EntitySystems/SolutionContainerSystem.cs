@@ -3,34 +3,23 @@ using System.Linq;
 using Content.Server.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry;
 using Content.Shared.Chemistry.Components;
+using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Chemistry.Reaction;
 using Content.Shared.Chemistry.Reagent;
 using Content.Shared.Examine;
 using Content.Shared.FixedPoint;
 using JetBrains.Annotations;
+using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
 
 namespace Content.Server.Chemistry.EntitySystems;
 
 /// <summary>
-/// This event alerts system that the solution was changed
-/// </summary>
-public sealed class SolutionChangedEvent : EntityEventArgs
-{
-    public readonly Solution Solution;
-
-    public SolutionChangedEvent(Solution solution)
-    {
-        Solution = solution;
-    }
-}
-
-/// <summary>
 /// Part of Chemistry system deal with SolutionContainers
 /// </summary>
 [UsedImplicitly]
-public sealed partial class SolutionContainerSystem : EntitySystem
+public sealed partial class SolutionContainerSystem : SharedSolutionContainerSystem
 {
     [Dependency]
     private readonly SharedChemicalReactionSystem _chemistrySystem = default!;
@@ -46,6 +35,7 @@ public sealed partial class SolutionContainerSystem : EntitySystem
 
         SubscribeLocalEvent<SolutionContainerManagerComponent, ComponentInit>(InitSolution);
         SubscribeLocalEvent<ExaminableSolutionComponent, ExaminedEvent>(OnExamineSolution);
+        SubscribeLocalEvent<PredictedSolutionComponent, ComponentGetState>(GetCompState);
     }
 
     private void InitSolution(EntityUid uid, SolutionContainerManagerComponent component, ComponentInit args)
@@ -54,6 +44,7 @@ public sealed partial class SolutionContainerSystem : EntitySystem
         {
             solutionHolder.Name = name;
             solutionHolder.ValidateSolution();
+            UpdatePrediction(uid, solutionHolder);
             UpdateAppearance(uid, solutionHolder);
         }
     }
@@ -93,7 +84,7 @@ public sealed partial class SolutionContainerSystem : EntitySystem
             ("desc", proto.LocalizedPhysicalDescription)));
     }
 
-    public void UpdateAppearance(EntityUid uid, Solution solution,
+    private void UpdateAppearance(EntityUid uid, Solution solution,
         AppearanceComponent? appearanceComponent = null)
     {
         if (!EntityManager.EntityExists(uid)
@@ -113,6 +104,17 @@ public sealed partial class SolutionContainerSystem : EntitySystem
         }
     }
 
+    private void UpdatePrediction(EntityUid uid, Solution solution, PredictedSolutionComponent? predictedSolution = null)
+    {
+        if (!Resolve(uid, ref predictedSolution) || predictedSolution.Solution != solution.Name)
+            return;
+
+        predictedSolution.Volume = solution.Volume;
+        predictedSolution.MaxVolume = solution.MaxVolume;
+        predictedSolution.Color = solution.GetColor(_prototypeManager);
+        Dirty(predictedSolution);
+    }
+
     /// <summary>
     ///     Removes part of the solution in the container.
     /// </summary>
@@ -127,7 +129,7 @@ public sealed partial class SolutionContainerSystem : EntitySystem
         return splitSol;
     }
 
-    public void UpdateChemicals(EntityUid uid, Solution solutionHolder, bool needsReactionsProcessing = false, ReactionMixerComponent? mixerComponent = null)
+    public void UpdateChemicals(EntityUid uid, Solution solutionHolder, bool needsReactionsProcessing = false, ReactionMixerComponent? mixerComponent = null, PredictedSolutionComponent? predictedSolution = null)
     {
         DebugTools.Assert(solutionHolder.Name != null && TryGetSolution(uid, solutionHolder.Name, out var tmp) && tmp == solutionHolder);
 
@@ -137,6 +139,7 @@ public sealed partial class SolutionContainerSystem : EntitySystem
             _chemistrySystem.FullyReactSolution(solutionHolder, uid, solutionHolder.MaxVolume, mixerComponent);
         }
 
+        UpdatePrediction(uid, solutionHolder, predictedSolution);
         UpdateAppearance(uid, solutionHolder);
         RaiseLocalEvent(uid, new SolutionChangedEvent(solutionHolder));
     }
@@ -250,7 +253,9 @@ public sealed partial class SolutionContainerSystem : EntitySystem
     /// <param name="source">source solution</param>
     /// <param name="target">target solution</param>
     /// <param name="quantity">quantity of solution to move from source to target. If this is a negative number, the source & target roles are reversed.</param>
-    public bool TryTransferSolution(EntityUid sourceUid, EntityUid targetUid, Solution source, Solution target, FixedPoint2 quantity)
+    public bool TryTransferSolution(
+        EntityUid sourceUid, EntityUid targetUid, Solution source, Solution target, FixedPoint2 quantity,
+        PredictedSolutionComponent? sourceSolution = null, PredictedSolutionComponent? targetSolution = null)
     {
         if (quantity < 0)
             return TryTransferSolution(targetUid, sourceUid, target, source, -quantity);
@@ -276,7 +281,9 @@ public sealed partial class SolutionContainerSystem : EntitySystem
     /// <param name="source">source solution</param>
     /// <param name="target">target solution</param>
     /// <param name="quantity">quantity of solution to move from source to target. If this is a negative number, the source & target roles are reversed.</param>
-    public bool TryTransferSolution(EntityUid sourceUid, EntityUid targetUid, string source, string target, FixedPoint2 quantity)
+    public override bool TryTransferSolution(
+        EntityUid sourceUid, EntityUid targetUid, string source, string target, FixedPoint2 quantity,
+        PredictedSolutionComponent? sourceSolution = null, PredictedSolutionComponent? targetSolution = null)
     {
         if (!TryGetSolution(sourceUid, source, out var sourceSoln))
             return false;
@@ -541,4 +548,15 @@ public sealed partial class SolutionContainerSystem : EntitySystem
     }
 
     #endregion Thermal Energy and Temperature
+
+    private void GetCompState(EntityUid uid, PredictedSolutionComponent predictedSolution, ref ComponentGetState args)
+    {
+        Logger.Debug("ASDF GET");
+        args.State = new PredictedSolutionComponentState
+        {
+            Volume = predictedSolution.Volume,
+            MaxVolume = predictedSolution.MaxVolume,
+            Color = predictedSolution.Color,
+        };
+    }
 }

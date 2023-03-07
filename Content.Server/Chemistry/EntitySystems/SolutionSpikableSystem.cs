@@ -3,6 +3,7 @@ using Content.Server.Chemistry.Components.SolutionManager;
 using Content.Server.Explosion.EntitySystems;
 using Content.Server.Popups;
 using Content.Shared.Chemistry.Components;
+using Content.Shared.Chemistry.Components.SolutionManager;
 using Content.Shared.FixedPoint;
 using Content.Shared.Interaction;
 using Robust.Shared.Player;

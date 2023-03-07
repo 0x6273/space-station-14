@@ -21,6 +21,8 @@
       beaker:
         maxVol: 50
         canMix: true
+  - type: PredictedSolution
+    solution: beaker
   - type: FitsInDispenser
     solution: beaker
   - type: RefillableSolution

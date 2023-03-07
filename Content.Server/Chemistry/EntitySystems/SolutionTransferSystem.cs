@@ -1,10 +1,11 @@
 using Content.Server.Administration.Logs;
 using Content.Shared.Verbs;
-using Content.Server.Chemistry.Components.SolutionManager;
 using JetBrains.Annotations;
 using Robust.Server.GameObjects;
 using Content.Shared.Chemistry;
 using Content.Shared.Chemistry.Components;
+using Content.Shared.Chemistry.Components.SolutionManager;
+using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Database;
 using Content.Shared.FixedPoint;
 using Content.Shared.Interaction;
@@ -13,7 +14,7 @@ using Content.Shared.Popups;
 namespace Content.Server.Chemistry.EntitySystems
 {
     [UsedImplicitly]
-    public sealed class SolutionTransferSystem : EntitySystem
+    public sealed class SolutionTransferSystem : SharedSolutionTransferSystem
     {
         [Dependency] private readonly SharedPopupSystem _popupSystem = default!;
         [Dependency] private readonly SolutionContainerSystem _solutionContainerSystem = default!;
@@ -91,21 +92,21 @@ namespace Content.Server.Chemistry.EntitySystems
             var target = args.Target!.Value;
 
             //Special case for reagent tanks, because normally clicking another container will give solution, not take it.
-            if (component.CanReceive  && !EntityManager.HasComponent<RefillableSolutionComponent>(target) // target must not be refillable (e.g. Reagent Tanks)
+            if (component.CanReceive  && !HasComp<RefillableSolutionComponent>(target) // target must not be refillable (e.g. Reagent Tanks)
                                       && _solutionContainerSystem.TryGetDrainableSolution(target, out var targetDrain) // target must be drainable
-                                      && EntityManager.TryGetComponent(uid, out RefillableSolutionComponent? refillComp)
+                                      && TryComp(uid, out RefillableSolutionComponent? refillComp)
                                       && _solutionContainerSystem.TryGetRefillableSolution(uid, out var ownerRefill, refillable: refillComp))
 
             {
 
                 var transferAmount = component.TransferAmount; // This is the player-configurable transfer amount of "uid," not the target reagent tank.
 
-                if (EntityManager.TryGetComponent(uid, out RefillableSolutionComponent? refill) && refill.MaxRefill != null) // uid is the entity receiving solution from target.
+                if (TryComp(uid, out RefillableSolutionComponent? refill) && refill.MaxRefill != null) // uid is the entity receiving solution from target.
                 {
                     transferAmount = FixedPoint2.Min(transferAmount, (FixedPoint2) refill.MaxRefill); // if the receiver has a smaller transfer limit, use that instead
                 }
 
-                var transferred = Transfer(args.User, target, targetDrain, uid, ownerRefill, transferAmount);
+                var transferred = Transfer(args.User, target, targetDrain, uid, ownerRefill, transferAmount, predicted: false);
                 if (transferred > 0)
                 {
                     var toTheBrim = ownerRefill.AvailableVolume == 0;
@@ -124,6 +125,8 @@ namespace Content.Server.Chemistry.EntitySystems
             if (component.CanSend && _solutionContainerSystem.TryGetRefillableSolution(target, out var targetRefill)
                                   && _solutionContainerSystem.TryGetDrainableSolution(uid, out var ownerDrain))
             {
+                var predicted = CanPredictSend(uid, target);
+
                 var transferAmount = component.TransferAmount;
 
                 if (EntityManager.TryGetComponent(target, out RefillableSolutionComponent? refill) && refill.MaxRefill != null)
@@ -131,12 +134,15 @@ namespace Content.Server.Chemistry.EntitySystems
                     transferAmount = FixedPoint2.Min(transferAmount, (FixedPoint2) refill.MaxRefill);
                 }
 
-                var transferred = Transfer(args.User, uid, ownerDrain, target, targetRefill, transferAmount);
+                var transferred = Transfer(args.User, uid, ownerDrain, target, targetRefill, transferAmount, predicted);
 
                 if (transferred > 0)
                 {
-                    var message = Loc.GetString("comp-solution-transfer-transfer-solution", ("amount", transferred), ("target", target));
-                    _popupSystem.PopupEntity(message, uid, args.User);
+                    if (!predicted)
+                    {
+                        var message = Loc.GetString("comp-solution-transfer-transfer-solution", ("amount", transferred), ("target", target));
+                        _popupSystem.PopupEntity(message, uid, args.User);
+                    }
 
                     args.Handled = true;
                 }
@@ -147,12 +153,14 @@ namespace Content.Server.Chemistry.EntitySystems
         /// Transfer from a solution to another.
         /// </summary>
         /// <returns>The actual amount transferred.</returns>
-        public FixedPoint2 Transfer(EntityUid user,
+        public FixedPoint2 Transfer(
+            EntityUid user,
             EntityUid sourceEntity,
             Solution source,
             EntityUid targetEntity,
             Solution target,
-            FixedPoint2 amount)
+            FixedPoint2 amount,
+            bool predicted)
         {
             var transferAttempt = new SolutionTransferAttemptEvent(sourceEntity, targetEntity);
 
@@ -160,13 +168,15 @@ namespace Content.Server.Chemistry.EntitySystems
             RaiseLocalEvent(sourceEntity, transferAttempt, broadcast: true);
             if (transferAttempt.Cancelled)
             {
-                _popupSystem.PopupEntity(transferAttempt.CancelReason!, sourceEntity, user);
+                if (!predicted)
+                    _popupSystem.PopupEntity(transferAttempt.CancelReason!, sourceEntity, user);
                 return FixedPoint2.Zero;
             }
 
             if (source.Volume == 0)
             {
-                _popupSystem.PopupEntity(Loc.GetString("comp-solution-transfer-is-empty", ("target", sourceEntity)), sourceEntity, user);
+                if (!predicted)
+                    _popupSystem.PopupEntity(Loc.GetString("comp-solution-transfer-is-empty", ("target", sourceEntity)), sourceEntity, user);
                 return FixedPoint2.Zero;
             }
 
@@ -174,13 +184,15 @@ namespace Content.Server.Chemistry.EntitySystems
             RaiseLocalEvent(targetEntity, transferAttempt, broadcast: true);
             if (transferAttempt.Cancelled)
             {
-                _popupSystem.PopupEntity(transferAttempt.CancelReason!, sourceEntity, user);
+                if (!predicted)
+                    _popupSystem.PopupEntity(transferAttempt.CancelReason!, sourceEntity, user);
                 return FixedPoint2.Zero;
             }
 
             if (target.AvailableVolume == 0)
             {
-                _popupSystem.PopupEntity(Loc.GetString("comp-solution-transfer-is-full", ("target", targetEntity)), targetEntity, user);
+                if (!predicted)
+                    _popupSystem.PopupEntity(Loc.GetString("comp-solution-transfer-is-full", ("target", targetEntity)), targetEntity, user);
                 return FixedPoint2.Zero;
             }
 
@@ -193,35 +205,6 @@ namespace Content.Server.Chemistry.EntitySystems
                 $"{EntityManager.ToPrettyString(user):player} transferred {string.Join(", ", solution.Contents)} to {EntityManager.ToPrettyString(targetEntity):entity}, which now contains {string.Join(", ", target.Contents)}");
 
             return actualAmount;
-        }
-    }
-
-    /// <summary>
-    /// Raised when attempting to transfer from one solution to another.
-    /// </summary>
-    public sealed class SolutionTransferAttemptEvent : CancellableEntityEventArgs
-    {
-        public SolutionTransferAttemptEvent(EntityUid from, EntityUid to)
-        {
-            From = from;
-            To = to;
-        }
-
-        public EntityUid From { get; }
-        public EntityUid To { get; }
-
-        /// <summary>
-        /// Why the transfer has been cancelled.
-        /// </summary>
-        public string? CancelReason { get; private set; }
-
-        /// <summary>
-        /// Cancels the transfer.
-        /// </summary>
-        public void Cancel(string reason)
-        {
-            base.Cancel();
-            CancelReason = reason;
         }
     }
 }

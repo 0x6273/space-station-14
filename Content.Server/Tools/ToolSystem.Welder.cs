@@ -1,8 +1,8 @@
 using System.Linq;
 using Content.Server.Chemistry.Components;
 using Content.Server.Chemistry.Components.SolutionManager;
-using Content.Server.Chemistry.EntitySystems;
 using Content.Server.Tools.Components;
+using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Database;
 using Content.Shared.Examine;
 using Content.Shared.FixedPoint;

@@ -2,6 +2,7 @@ using Content.Server.Administration.Logs;
 using Content.Server.Chemistry.EntitySystems;
 using Content.Server.Explosion.EntitySystems;
 using Content.Server.Power.Components;
+using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Database;
 using Content.Shared.Examine;
 using Content.Shared.PowerCell;
