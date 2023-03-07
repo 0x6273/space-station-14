@@ -2,6 +2,7 @@ using Content.Server.Administration.Logs;
 using Content.Shared.Verbs;
 using JetBrains.Annotations;
 using Robust.Server.GameObjects;
+using Content.Server.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Chemistry.Components.SolutionManager;
@@ -90,6 +91,9 @@ namespace Content.Server.Chemistry.EntitySystems
                 return;
 
             var target = args.Target!.Value;
+            if (!TryComp(uid, out SolutionContainerManagerComponent? sourceSolution)
+                || !TryComp(target, out SolutionContainerManagerComponent? targetSolution))
+                return;
 
             //Special case for reagent tanks, because normally clicking another container will give solution, not take it.
             if (component.CanReceive  && !HasComp<RefillableSolutionComponent>(target) // target must not be refillable (e.g. Reagent Tanks)
@@ -125,7 +129,7 @@ namespace Content.Server.Chemistry.EntitySystems
             if (component.CanSend && _solutionContainerSystem.TryGetRefillableSolution(target, out var targetRefill)
                                   && _solutionContainerSystem.TryGetDrainableSolution(uid, out var ownerDrain))
             {
-                var predicted = CanPredictSend(uid, target);
+                var predicted = sourceSolution.PredictedSolution == ownerDrain.Name && targetSolution.PredictedSolution == targetRefill.Name;
 
                 var transferAmount = component.TransferAmount;
 

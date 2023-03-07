@@ -1,4 +1,5 @@
-using Content.Shared.Chemistry.Components;
+using Content.Client.Chemistry.Components.SolutionManager;
+using Content.Shared.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.FixedPoint;
 using Robust.Shared.GameStates;
@@ -13,20 +14,20 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
     {
         base.Initialize();
 
-        SubscribeLocalEvent<PredictedSolutionComponent, ComponentHandleState>(HandleCompState);
+        SubscribeLocalEvent<SolutionContainerManagerComponent, ComponentHandleState>(HandleCompState);
     }
 
-    public override bool TryTransferSolution(
-        EntityUid sourceUid, EntityUid targetUid, String source, String target, FixedPoint2 quantity,
-        PredictedSolutionComponent? sourceSolution = null, PredictedSolutionComponent? targetSolution = null)
+    public override bool TryTransferSolution(EntityUid sourceUid, EntityUid targetUid, String source, String target, FixedPoint2 quantity)
     {
         if (quantity < 0)
-            return TryTransferSolution(targetUid, sourceUid, source: target, target: source, -quantity, sourceSolution, targetSolution);
+            return TryTransferSolution(targetUid, sourceUid, source: target, target: source, -quantity);
 
+        SolutionContainerManagerComponent? sourceSolution = null; //TODO method parameter
+        SolutionContainerManagerComponent? targetSolution = null;
         if (!Resolve(sourceUid, ref sourceSolution)
-            || sourceSolution.Solution != source
+            || sourceSolution.PredictedSolution != source
             || !Resolve(targetUid, ref targetSolution)
-            || targetSolution.Solution != target)
+            || targetSolution.PredictedSolution != target)
             return false;
 
         var targetSolutionAvailableVolume = targetSolution.MaxVolume - targetSolution.Volume;
@@ -41,13 +42,13 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
         return true;
     }
 
-    private void HandleCompState(EntityUid uid, PredictedSolutionComponent predictedSolution, ref ComponentHandleState args)
+    private void HandleCompState(EntityUid uid, SolutionContainerManagerComponent solutionContainer, ref ComponentHandleState args)
     {
-        if (args.Current is not PredictedSolutionComponentState state)
+        if (args.Current is not SolutionContainerManagerComponentState state)
             return;
 
-        predictedSolution.Volume = state.Volume;
-        predictedSolution.MaxVolume = state.MaxVolume;
-        predictedSolution.Color = state.Color;
+        solutionContainer.Volume = state.Volume;
+        solutionContainer.MaxVolume = state.MaxVolume;
+        solutionContainer.Color = state.Color;
     }
 }

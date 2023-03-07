@@ -1,3 +1,4 @@
+using Content.Client.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry.EntitySystems;
@@ -37,15 +38,17 @@ public class SolutionTransferSystem : SharedSolutionTransferSystem
 
         // if target is refillable, and owner is drainable
         if (!component.CanSend
-            || !TryComp<PredictedSolutionComponent>(uid, out var sourcePredictedSolution)
-            || !TryComp<PredictedSolutionComponent>(target, out var targetPredictedSolution)
+            || !TryComp<SolutionContainerManagerComponent>(uid, out var sourceSolution)
+            || !TryComp<SolutionContainerManagerComponent>(target, out var targetSolution)
+            || !TryComp<DrainableSolutionComponent>(target, out var drainable)
             || !TryComp<RefillableSolutionComponent>(target, out var refillable)
-            || !CanPredictSend(uid, target, refillable: refillable, sourcePredictedSolution: sourcePredictedSolution, targetPredictedSolution: targetPredictedSolution))
+            || sourceSolution.PredictedSolution != drainable.Solution
+            || targetSolution.PredictedSolution != refillable.Solution)
             return;
 
         var transferAmount = FixedPoint2.Min(component.TransferAmount, refillable.MaxRefill.GetValueOrDefault(FixedPoint2.MaxValue));
 
-        var transferred = Transfer(uid, target, sourcePredictedSolution, targetPredictedSolution, transferAmount, args.User);
+        var transferred = Transfer(uid, target, sourceSolution, targetSolution, transferAmount, args.User);
 
         if (transferred > 0)
         {
@@ -56,7 +59,7 @@ public class SolutionTransferSystem : SharedSolutionTransferSystem
         }
     }
 
-    private FixedPoint2 Transfer(EntityUid sourceUid, EntityUid targetUid, PredictedSolutionComponent sourceSolution, PredictedSolutionComponent targetSolution, FixedPoint2 quantity, EntityUid? user)
+    private FixedPoint2 Transfer(EntityUid sourceUid, EntityUid targetUid, SolutionContainerManagerComponent sourceSolution, SolutionContainerManagerComponent targetSolution, FixedPoint2 quantity, EntityUid? user)
     {
         var attemptEvent = new SolutionTransferAttemptEvent(sourceUid, targetUid);
 
@@ -91,7 +94,7 @@ public class SolutionTransferSystem : SharedSolutionTransferSystem
         }
 
         var actualQuantity = FixedPoint2.Min(quantity, sourceSolution.Volume, targetSolution.MaxVolume - targetSolution.Volume);
-        _solutionContainerSystem.TryTransferSolution(sourceUid, targetUid, sourceSolution.Solution, targetSolution.Solution, actualQuantity, sourceSolution, targetSolution);
+        _solutionContainerSystem.TryTransferSolution(sourceUid, targetUid, sourceSolution.PredictedSolution!, targetSolution.PredictedSolution!, actualQuantity);
         return actualQuantity;
     }
 }

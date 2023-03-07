@@ -1,5 +1,6 @@
 using Content.Shared.Chemistry;
 using Content.Shared.Chemistry.Components;
+using Content.Shared.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry.Reaction;
 using Content.Shared.Chemistry.Reagent;
 using Content.Shared.Examine;
@@ -27,8 +28,6 @@ public sealed class SolutionChangedEvent : EntityEventArgs
 /// </summary>
 public abstract partial class SharedSolutionContainerSystem : EntitySystem
 {
-    // Client logic. Overridden in server system.
-    public abstract bool TryTransferSolution(
-        EntityUid sourceUid, EntityUid targetUid, String source, String target, FixedPoint2 quantity,
-        PredictedSolutionComponent? sourceSolution = null, PredictedSolutionComponent? targetSolution = null);
+    //TODO: SolutionContainerManagerComponent optional parameters
+    public abstract bool TryTransferSolution(EntityUid sourceUid, EntityUid targetUid, String source, String target, FixedPoint2 quantity);
 }

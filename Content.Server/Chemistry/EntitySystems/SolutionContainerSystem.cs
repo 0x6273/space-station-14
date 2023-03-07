@@ -3,6 +3,7 @@ using System.Linq;
 using Content.Server.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry;
 using Content.Shared.Chemistry.Components;
+using Content.Shared.Chemistry.Components.SolutionManager;
 using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Chemistry.Reaction;
 using Content.Shared.Chemistry.Reagent;
@@ -34,8 +35,8 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
         base.Initialize();
 
         SubscribeLocalEvent<SolutionContainerManagerComponent, ComponentInit>(InitSolution);
+        SubscribeLocalEvent<SolutionContainerManagerComponent, ComponentGetState>(GetCompState);
         SubscribeLocalEvent<ExaminableSolutionComponent, ExaminedEvent>(OnExamineSolution);
-        SubscribeLocalEvent<PredictedSolutionComponent, ComponentGetState>(GetCompState);
     }
 
     private void InitSolution(EntityUid uid, SolutionContainerManagerComponent component, ComponentInit args)
@@ -104,15 +105,10 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
         }
     }
 
-    private void UpdatePrediction(EntityUid uid, Solution solution, PredictedSolutionComponent? predictedSolution = null)
+    private void UpdatePrediction(EntityUid uid, Solution solution, SolutionContainerManagerComponent? solutionContainer = null)
     {
-        if (!Resolve(uid, ref predictedSolution) || predictedSolution.Solution != solution.Name)
-            return;
-
-        predictedSolution.Volume = solution.Volume;
-        predictedSolution.MaxVolume = solution.MaxVolume;
-        predictedSolution.Color = solution.GetColor(_prototypeManager);
-        Dirty(predictedSolution);
+        if (Resolve(uid, ref solutionContainer) && solutionContainer.PredictedSolution == solution.Name)
+            Dirty(solutionContainer);
     }
 
     /// <summary>
@@ -129,7 +125,7 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
         return splitSol;
     }
 
-    public void UpdateChemicals(EntityUid uid, Solution solutionHolder, bool needsReactionsProcessing = false, ReactionMixerComponent? mixerComponent = null, PredictedSolutionComponent? predictedSolution = null)
+    public void UpdateChemicals(EntityUid uid, Solution solutionHolder, bool needsReactionsProcessing = false, ReactionMixerComponent? mixerComponent = null, SolutionContainerManagerComponent? solutionContainer = null)
     {
         DebugTools.Assert(solutionHolder.Name != null && TryGetSolution(uid, solutionHolder.Name, out var tmp) && tmp == solutionHolder);
 
@@ -139,7 +135,7 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
             _chemistrySystem.FullyReactSolution(solutionHolder, uid, solutionHolder.MaxVolume, mixerComponent);
         }
 
-        UpdatePrediction(uid, solutionHolder, predictedSolution);
+        UpdatePrediction(uid, solutionHolder, solutionContainer);
         UpdateAppearance(uid, solutionHolder);
         RaiseLocalEvent(uid, new SolutionChangedEvent(solutionHolder));
     }
@@ -254,11 +250,10 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
     /// <param name="target">target solution</param>
     /// <param name="quantity">quantity of solution to move from source to target. If this is a negative number, the source & target roles are reversed.</param>
     public bool TryTransferSolution(
-        EntityUid sourceUid, EntityUid targetUid, Solution source, Solution target, FixedPoint2 quantity,
-        PredictedSolutionComponent? sourceSolution = null, PredictedSolutionComponent? targetSolution = null)
+        EntityUid sourceUid, EntityUid targetUid, Solution source, Solution target, FixedPoint2 quantity)
     {
         if (quantity < 0)
-            return TryTransferSolution(targetUid, sourceUid, target, source, -quantity);
+            return TryTransferSolution(sourceUid: targetUid, targetUid: sourceUid, source: target, target: source, -quantity);
 
         quantity = FixedPoint2.Min(quantity, target.AvailableVolume, source.Volume);
         if (quantity == 0)
@@ -281,9 +276,7 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
     /// <param name="source">source solution</param>
     /// <param name="target">target solution</param>
     /// <param name="quantity">quantity of solution to move from source to target. If this is a negative number, the source & target roles are reversed.</param>
-    public override bool TryTransferSolution(
-        EntityUid sourceUid, EntityUid targetUid, string source, string target, FixedPoint2 quantity,
-        PredictedSolutionComponent? sourceSolution = null, PredictedSolutionComponent? targetSolution = null)
+    public override bool TryTransferSolution(EntityUid sourceUid, EntityUid targetUid, string source, string target, FixedPoint2 quantity)
     {
         if (!TryGetSolution(sourceUid, source, out var sourceSoln))
             return false;
@@ -549,14 +542,20 @@ public sealed partial class SolutionContainerSystem : SharedSolutionContainerSys
 
     #endregion Thermal Energy and Temperature
 
-    private void GetCompState(EntityUid uid, PredictedSolutionComponent predictedSolution, ref ComponentGetState args)
+    private void GetCompState(EntityUid uid, SolutionContainerManagerComponent solutionContainer, ref ComponentGetState args)
     {
-        Logger.Debug("ASDF GET");
-        args.State = new PredictedSolutionComponentState
+        if (solutionContainer.PredictedSolution is not null && TryGetSolution(uid, solutionContainer.PredictedSolution, out var solution))
         {
-            Volume = predictedSolution.Volume,
-            MaxVolume = predictedSolution.MaxVolume,
-            Color = predictedSolution.Color,
-        };
+            args.State = new SolutionContainerManagerComponentState
+            {
+                Volume = solution.Volume,
+                MaxVolume = solution.MaxVolume,
+                Color = solution.GetColor(_prototypeManager),
+            };
+        }
+        else
+        {
+            args.State = new SolutionContainerManagerComponentState();
+        }
     }
 }

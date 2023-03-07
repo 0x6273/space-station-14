@@ -7,16 +7,6 @@ namespace Content.Shared.Chemistry.EntitySystems;
 
 public abstract class SharedSolutionTransferSystem : EntitySystem
 {
-    public bool CanPredictSend(EntityUid sourceUid, EntityUid targetUid, DrainableSolutionComponent? drainable = null, RefillableSolutionComponent? refillable = null,
-        PredictedSolutionComponent? sourcePredictedSolution = null, PredictedSolutionComponent? targetPredictedSolution = null)
-    {
-        return Resolve(sourceUid, ref drainable)
-            && Resolve(sourceUid, ref sourcePredictedSolution)
-            && Resolve(targetUid, ref refillable)
-            && Resolve(targetUid, ref targetPredictedSolution)
-            && drainable.Solution == sourcePredictedSolution.Solution
-            && refillable.Solution == targetPredictedSolution.Solution;
-    }
 }
 
 
