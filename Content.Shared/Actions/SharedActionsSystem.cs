@@ -10,6 +10,7 @@ using Robust.Shared.Audio;
 using Robust.Shared.Containers;
 using Robust.Shared.GameStates;
 using Robust.Shared.Map;
+using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
@@ -20,6 +21,7 @@ namespace Content.Shared.Actions;
 public abstract class SharedActionsSystem : EntitySystem
 {
     [Dependency] protected readonly IGameTiming GameTiming = default!;
+    [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
     [Dependency] private readonly SharedInteractionSystem _interactionSystem = default!;
     [Dependency] private readonly ActionBlockerSystem _actionBlockerSystem = default!;
@@ -297,7 +299,8 @@ public abstract class SharedActionsSystem : EntitySystem
         if (action.Charges != null)
         {
             dirty = true;
-            action.Charges--;
+            if (_net.IsServer || GameTiming.IsFirstTimePredicted)
+                action.Charges--;
             if (action.Charges == 0)
                 action.Enabled = false;
         }

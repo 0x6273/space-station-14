@@ -14,8 +14,8 @@
     - state: nothing-unshaded
       shader: unshaded
   - type: ActionOnInteract
-    entityActions:
-    - whitelist: { components: [ PointLight ] }
+    entityAction:
+      whitelist: { components: [ PointLight ] }
       charges: 25
       sound: /Audio/Magic/blink.ogg
       event: !type:ChangeComponentsSpellEvent

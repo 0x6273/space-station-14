@@ -125,7 +125,6 @@ public class WorldTargetAction : TargetedAction
     ///     The local-event to raise when this action is performed.
     /// </summary>
     [DataField("event")]
-    [NonSerialized]
     public WorldTargetActionEvent? Event;
 
     public WorldTargetAction() { }

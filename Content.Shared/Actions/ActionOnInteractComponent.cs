@@ -1,7 +1,7 @@
 using Content.Shared.Actions.ActionTypes;
 using Content.Shared.Interaction;
 
-namespace Content.Server.Actions;
+namespace Content.Shared.Actions;
 
 /// <summary>
 ///     This component enables an entity to perform actions when used to interact with the world, without actually
@@ -19,12 +19,12 @@ namespace Content.Server.Actions;
 [RegisterComponent]
 public sealed class ActionOnInteractComponent : Component
 {
-    [DataField("activateActions")]
-    public List<InstantAction>? ActivateActions;
+    [DataField("activateAction")]
+    public InstantAction? ActivateAction;
 
-    [DataField("entityActions")]
-    public List<EntityTargetAction>? EntityActions;
+    [DataField("entityAction")]
+    public EntityTargetAction? EntityAction;
 
-    [DataField("worldActions")]
-    public List<WorldTargetAction>? WorldActions;
+    [DataField("worldAction")]
+    public WorldTargetAction? WorldAction;
 }
