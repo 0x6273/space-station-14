@@ -71,6 +71,7 @@ public sealed class RequestPerformActionEvent : EntityEventArgs
 /// <remarks>
 ///     To define a new action for some system, you need to create an event that inherits from this class.
 /// </remarks>
+[Serializable, NetSerializable]
 public abstract class InstantActionEvent : BaseActionEvent { }
 
 /// <summary>
@@ -81,6 +82,7 @@ public abstract class InstantActionEvent : BaseActionEvent { }
 /// <remarks>
 ///     To define a new action for some system, you need to create an event that inherits from this class.
 /// </remarks>
+[Serializable, NetSerializable]
 public abstract class EntityTargetActionEvent : BaseActionEvent
 {
     /// <summary>
@@ -97,6 +99,7 @@ public abstract class EntityTargetActionEvent : BaseActionEvent
 /// <remarks>
 ///     To define a new action for some system, you need to create an event that inherits from this class.
 /// </remarks>
+[Serializable, NetSerializable]
 public abstract class WorldTargetActionEvent : BaseActionEvent
 {
     /// <summary>
@@ -109,7 +112,7 @@ public abstract class WorldTargetActionEvent : BaseActionEvent
 ///     Base class for events that are raised when an action gets performed. This should not generally be used outside of the action
 ///     system.
 /// </summary>
-[ImplicitDataDefinitionForInheritors]
+[ImplicitDataDefinitionForInheritors, Serializable, NetSerializable]
 public abstract class BaseActionEvent : HandledEntityEventArgs
 {
     /// <summary>
