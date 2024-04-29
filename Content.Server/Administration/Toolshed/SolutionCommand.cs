@@ -1,4 +1,4 @@
-﻿using Content.Server.Chemistry.Containers.EntitySystems;
+using Content.Server.Chemistry.Containers.EntitySystems;
 using Content.Shared.Administration;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Chemistry.Reagent;
@@ -17,10 +17,9 @@ public sealed class SolutionCommand : ToolshedCommand
 
     [CommandImplementation("get")]
     public SolutionRef? Get(
-            [CommandInvocationContext] IInvocationContext ctx,
-            [PipedArgument] EntityUid input,
-            [CommandArgument] ValueRef<string> name
-        )
+        [CommandInvocationContext] IInvocationContext ctx,
+        [PipedArgument] EntityUid input,
+        [CommandArgument] ValueRef<string> name)
     {
         _solutionContainer ??= GetSys<SolutionContainerSystem>();
 
@@ -34,19 +33,17 @@ public sealed class SolutionCommand : ToolshedCommand
     public IEnumerable<SolutionRef> Get(
         [CommandInvocationContext] IInvocationContext ctx,
         [PipedArgument] IEnumerable<EntityUid> input,
-        [CommandArgument] ValueRef<string> name
-    )
+        [CommandArgument] ValueRef<string> name)
     {
         return input.Select(x => Get(ctx, x, name)).Where(x => x is not null).Cast<SolutionRef>();
     }
 
     [CommandImplementation("adjreagent")]
     public SolutionRef AdjReagent(
-            [CommandInvocationContext] IInvocationContext ctx,
-            [PipedArgument] SolutionRef input,
-            [CommandArgument] Prototype<ReagentPrototype> name,
-            [CommandArgument] ValueRef<FixedPoint2> amountRef
-        )
+        [CommandInvocationContext] IInvocationContext ctx,
+        [PipedArgument] SolutionRef input,
+        [CommandArgument] Prototype<ReagentPrototype> name,
+        [CommandArgument] ValueRef<FixedPoint2> amountRef)
     {
         _solutionContainer ??= GetSys<SolutionContainerSystem>();
 
@@ -65,11 +62,10 @@ public sealed class SolutionCommand : ToolshedCommand
 
     [CommandImplementation("adjreagent")]
     public IEnumerable<SolutionRef> AdjReagent(
-            [CommandInvocationContext] IInvocationContext ctx,
-            [PipedArgument] IEnumerable<SolutionRef> input,
-            [CommandArgument] Prototype<ReagentPrototype> name,
-            [CommandArgument] ValueRef<FixedPoint2> amountRef
-        )
+        [CommandInvocationContext] IInvocationContext ctx,
+        [PipedArgument] IEnumerable<SolutionRef> input,
+        [CommandArgument] Prototype<ReagentPrototype> name,
+        [CommandArgument] ValueRef<FixedPoint2> amountRef)
         => input.Select(x => AdjReagent(ctx, x, name, amountRef));
 }
 

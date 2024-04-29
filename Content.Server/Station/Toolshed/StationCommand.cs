@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Linq;
 using Content.Server.Administration;
 using Content.Server.Cargo.Systems;
@@ -10,10 +10,10 @@ using Robust.Shared.Toolshed.Errors;
 using Robust.Shared.Toolshed.Syntax;
 using Robust.Shared.Utility;
 
-namespace Content.Server.Station.Commands;
+namespace Content.Server.Station.Toolshed;
 
 [ToolshedCommand, AdminCommand(AdminFlags.Admin)]
-public sealed class StationsCommand : ToolshedCommand
+public sealed class StationCommand : ToolshedCommand
 {
     private StationSystem? _station;
     private CargoSystem? _cargo;
@@ -104,7 +104,8 @@ public sealed class StationsCommand : ToolshedCommand
     }
 
     [CommandImplementation("rename")]
-    public void Rename([CommandInvocationContext] IInvocationContext ctx,
+    public void Rename(
+        [CommandInvocationContext] IInvocationContext ctx,
         [PipedArgument] EntityUid input,
         [CommandArgument] ValueRef<string> name
     )
@@ -114,8 +115,9 @@ public sealed class StationsCommand : ToolshedCommand
         _station.RenameStation(input, name.Evaluate(ctx)!);
     }
 
-    [CommandImplementation("rerollBounties")]
-    public void RerollBounties([CommandInvocationContext] IInvocationContext ctx,
+    [CommandImplementation("rerollbounties")]
+    public void RerollBounties(
+        [CommandInvocationContext] IInvocationContext ctx,
         [PipedArgument] EntityUid input)
     {
         _cargo ??= GetSys<CargoSystem>();

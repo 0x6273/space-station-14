@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Content.Server.Administration;
 using Content.Server.Station.Systems;
 using Content.Shared.Administration;
@@ -7,10 +7,10 @@ using Robust.Shared.Toolshed;
 using Robust.Shared.Toolshed.Syntax;
 using Robust.Shared.Toolshed.TypeParsers;
 
-namespace Content.Server.Station.Commands;
+namespace Content.Server.Station.Toolshed;
 
 [ToolshedCommand, AdminCommand(AdminFlags.VarEdit)]
-public sealed class JobsCommand : ToolshedCommand
+public sealed class JobCommand : ToolshedCommand
 {
     private StationJobsSystem? _jobs;
 
